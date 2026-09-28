@@ -1,0 +1,672 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0a0908">
+<title>How Sinatra Are You?</title>
+<meta name="description" content="Five choices. One Sinatra score. Not what you know — how you move.">
+<link rel="preload" as="image" href="img/frank-mic.jpg">
+<style>
+  /* HOW SINATRA ARE YOU? — version 2. One file, no backend, no accounts, mobile first.
+     Photography: Frank In Person press images, stored next to this page. Nothing is sent anywhere. */
+  :root {
+    --ivory:#f3ecdc; --ivory-2:#cfc6b2; --ivory-3:#8d8574;
+    --black:#0a0908; --gold:#d9a441; --gold-hi:#f0c46a; --wine:#3a0f14;
+    --line:rgba(243,236,220,.18);
+    --display:"Avenir Next Condensed", "Futura", "Helvetica Neue", "Arial Narrow", "Roboto Condensed", sans-serif-condensed, sans-serif;
+    --serif:"Bodoni 72", "Didot", "Bodoni MT", "Playfair Display", "Times New Roman", serif;
+    --pad:clamp(20px, 6vw, 44px);
+    --safe-t:env(safe-area-inset-top, 0px); --safe-b:env(safe-area-inset-bottom, 0px);
+  }
+  * { box-sizing:border-box; }
+  html, body { margin:0; padding:0; background:var(--black); color:var(--ivory); overflow-x:clip; }
+  body {
+    font-family:-apple-system, "Helvetica Neue", Arial, sans-serif;
+    font-size:17px; line-height:1.45; -webkit-font-smoothing:antialiased; -webkit-tap-highlight-color:transparent;
+  }
+  .screen { display:none; position:relative; min-height:100vh; min-height:100svh; isolation:isolate; }
+  .screen.on { display:flex; flex-direction:column; }
+
+  /* De foto als toneel: zwart-wit met warm toneellicht, en genoeg donker voor de letters. */
+  .photo { position:absolute; inset:0; z-index:-2; overflow:hidden; }
+  .photo img {
+    width:100%; height:100%; object-fit:cover; display:block;
+    filter:saturate(1.05) contrast(1.05) brightness(.95);
+  }
+  .photo::after { content:""; position:absolute; inset:0; }
+  .eyebrow { font-family:var(--display); font-size:12px; font-weight:700; letter-spacing:.34em; color:var(--gold); margin:0; text-transform:uppercase; }
+
+  .cta {
+    display:flex; align-items:center; justify-content:center; gap:12px; width:100%; min-height:62px;
+    border:0; border-radius:2px; cursor:pointer; text-decoration:none; text-align:center;
+    background:var(--gold); color:var(--black);
+    font-family:var(--display); font-size:19px; font-weight:700; letter-spacing:.2em; text-transform:uppercase;
+    padding:16px 22px; transition:background .2s ease, transform .1s ease;
+  }
+  .cta:hover, .cta:focus-visible { background:var(--gold-hi); }
+  .cta:active { transform:scale(.985); }
+  /* Na een tik blijft de gouden knop even zichtbaar ingedrukt voordat de volgende stap komt. */
+  .cta.pressed { background:var(--gold-hi); transform:scale(.97); box-shadow:inset 0 0 0 2px rgba(10,9,8,.35); }
+  .cta.ghost { background:transparent; color:var(--ivory); border:1px solid var(--line); }
+  .cta.ghost:hover, .cta.ghost:focus-visible { border-color:var(--gold); color:var(--gold-hi); background:transparent; }
+
+  /* ---------- OPENING ---------- */
+  #start .photo { bottom:auto; height:74vh; height:74svh; }
+  #start .photo img { object-position:78% 0%; }
+  #start .photo::after {
+    background:
+      radial-gradient(120% 60% at 70% 12%, rgba(240,180,90,.12), transparent 60%),
+      linear-gradient(180deg, rgba(10,9,8,.4) 0%, rgba(10,9,8,0) 18%, rgba(10,9,8,0) 50%, rgba(10,9,8,.75) 82%, var(--black) 100%);
+  }
+  .open-top { padding:calc(var(--safe-t) + 20px) var(--pad) 0; }
+  .brand { display:block; width:clamp(112px, 30vw, 160px); height:auto; opacity:.92; }
+  .open-body { margin-top:auto; padding:0 var(--pad) calc(var(--safe-b) + 28px); max-width:720px; }
+  .title {
+    font-family:var(--display); font-weight:700; text-transform:uppercase;
+    font-size:clamp(64px, 20vw, 150px); line-height:.84; letter-spacing:-.01em; margin:0 0 22px;
+    text-shadow:0 2px 30px rgba(0,0,0,.45);
+  }
+  .title span { display:block; }
+  .title .gold { color:var(--gold); }
+  .move {
+    font-family:var(--serif); font-style:italic; font-size:clamp(25px, 7vw, 34px); line-height:1.12;
+    color:var(--ivory); margin:0 0 12px; text-shadow:0 2px 18px rgba(0,0,0,.75);
+  }
+  .move b { font-weight:400; color:var(--gold-hi); }
+  .how { font-size:15px; color:var(--ivory-2); margin:0 0 24px; letter-spacing:.02em; }
+
+  /* ---------- QUESTIONS ---------- */
+  #quiz .photo { height:48vh; height:48svh; bottom:auto; }
+  #quiz .photo img { object-position:62% 70%; transform:scale(1.3); transform-origin:62% 70%; filter:saturate(1) contrast(1.05) brightness(.7); }
+  #quiz .photo::after { background:linear-gradient(180deg, rgba(10,9,8,.7) 0%, rgba(10,9,8,.2) 30%, rgba(10,9,8,.45) 70%, var(--black) 100%); }
+  .quiz-in { width:100%; max-width:640px; margin:0 auto; padding:calc(var(--safe-t) + 22px) var(--pad) calc(var(--safe-b) + 28px); display:flex; flex-direction:column; min-height:100vh; min-height:100svh; }
+  .meter { display:flex; gap:6px; margin:0 0 14px; }
+  .meter i { flex:1; height:4px; background:rgba(243,236,220,.22); }
+  .meter i.done { background:var(--gold); }
+  .meter i.now { background:rgba(217,164,65,.5); }
+  .last { font-family:var(--display); font-size:clamp(26px, 7.4vw, 34px); font-weight:700; letter-spacing:.08em; color:var(--gold-hi); margin:4px 0 0; }
+  .count { font-family:var(--display); font-size:19px; font-weight:700; letter-spacing:.22em; color:var(--gold-hi); margin:2px 0 0; text-shadow:0 1px 12px rgba(0,0,0,.8); }
+  .q-text {
+    font-family:var(--serif); font-weight:400; font-size:clamp(32px, 9vw, 48px); line-height:1.08; letter-spacing:-.005em; color:var(--gold-hi);
+    margin:0 0 22px; padding-top:27vh; padding-top:27svh; outline:none; text-shadow:0 2px 24px rgba(0,0,0,.7);
+  }
+  #choices { counter-reset:opt; }
+  .choice {
+    counter-increment:opt; display:flex; align-items:center; gap:16px; width:100%; min-height:66px; text-align:left; cursor:pointer;
+    font:inherit; font-size:18px; font-weight:600; line-height:1.25; color:var(--ivory);
+    background:rgba(243,236,220,.04); border:0; border-top:1px solid var(--line); padding:14px 10px 14px 4px; margin:0;
+    transition:background .15s ease, color .15s ease;
+  }
+  .choice:last-child { border-bottom:1px solid var(--line); }
+  .choice::before {
+    content:counter(opt, upper-alpha); flex:none; width:34px; height:34px; display:grid; place-items:center;
+    font-family:var(--display); font-size:15px; font-weight:700; color:var(--gold); border:1px solid rgba(217,164,65,.55); border-radius:50%;
+  }
+  .choice:hover, .choice:focus-visible { background:rgba(217,164,65,.12); color:#fff; outline:none; }
+  .choice:active { background:rgba(217,164,65,.24); }
+  /* De gekozen antwoordkaart blijft even zichtbaar voordat de volgende vraag komt. */
+  .choice.picked { background:rgba(217,164,65,.24); box-shadow:inset 0 0 0 1px var(--gold); color:#fff; }
+  .choice.picked::before { background:var(--gold); color:var(--black); border-color:var(--gold); }
+  #choices.locked .choice:not(.picked) { opacity:.45; animation:none; }
+  .rise { animation:rise .38s cubic-bezier(.2,.7,.2,1) both; }
+  #choices .choice { animation:rise .38s cubic-bezier(.2,.7,.2,1) both; }
+  #choices .choice:nth-child(2) { animation-delay:.04s; }
+  #choices .choice:nth-child(3) { animation-delay:.08s; }
+  #choices .choice:nth-child(4) { animation-delay:.12s; }
+  @keyframes rise { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:none; } }
+
+  /* ---------- RESULT: the poster ---------- */
+  #result { background:var(--black); }
+  .poster { position:relative; isolation:isolate; min-height:100vh; min-height:100svh; display:flex; flex-direction:column; }
+  .poster[hidden], .step[hidden] { display:none; }
+  .congrats { font-family:var(--serif); font-style:italic; font-size:clamp(32px, 9vw, 44px); line-height:1.05; color:var(--gold-hi); margin:0 0 8px; text-shadow:0 2px 18px rgba(0,0,0,.8); }
+  .poster .photo { height:62vh; height:62svh; bottom:auto; }
+  .poster .photo img { object-position:50% 0%; }
+  .poster .photo::after {
+    background:
+      radial-gradient(90% 60% at 50% 25%, rgba(240,180,90,.14), transparent 70%),
+      linear-gradient(180deg, rgba(10,9,8,.55) 0%, rgba(10,9,8,0) 16%, rgba(10,9,8,0) 50%, rgba(10,9,8,.8) 80%, var(--black) 100%);
+  }
+  .poster-top { padding:calc(var(--safe-t) + 20px) var(--pad) 0; display:flex; justify-content:space-between; gap:12px; }
+  .poster-body { margin-top:auto; padding:0 var(--pad) calc(var(--safe-b) + 26px); width:100%; max-width:720px; margin-left:auto; margin-right:auto; }
+  .score {
+    font-family:var(--serif); font-weight:400; font-size:clamp(128px, 44vw, 250px); line-height:.82; letter-spacing:-.04em;
+    color:var(--ivory); margin:0; text-shadow:0 4px 40px rgba(0,0,0,.55);
+  }
+  .score.wide { font-size:min(36vw, 210px); }
+  .you-are { font-family:var(--display); font-weight:700; font-size:clamp(20px, 5.8vw, 28px); letter-spacing:.14em; color:var(--ivory); margin:14px 0 12px; }
+  .verdict {
+    font-family:var(--display); font-weight:700; text-transform:uppercase; font-size:clamp(40px, 12.5vw, 84px);
+    line-height:.9; letter-spacing:-.005em; color:var(--gold-hi); margin:0 0 14px;
+  }
+  .because { font-size:16px; line-height:1.45; color:var(--ivory-2); margin:0 0 24px; max-width:34em; }
+  .share .cta + .cta { margin-top:10px; }
+  /* Een kleine knipoog bij PLAY AGAIN; geen kop en geen knop. */
+  .wink { font-family:var(--display); font-weight:700; font-size:12px; letter-spacing:.3em; text-transform:uppercase; color:var(--ivory-3); text-align:center; margin:12px 0 0; }
+  .said { font-size:14px; color:var(--gold-hi); min-height:20px; margin:12px 0 0; text-align:center; overflow-wrap:anywhere; }
+
+  .credit { font-size:11px; color:var(--ivory-3); margin:26px 0 0; letter-spacing:.04em; }
+
+  /* ---------- GROWTH: your card, the prize, the live show ---------- */
+  .grow { padding:calc(var(--safe-t) + 24px) var(--pad) 8px; text-align:center; }
+  .grow-in, .prize-in, .live-in { max-width:560px; margin:0 auto; }
+  .grow-in, .later-in { max-width:560px; margin:0 auto; }
+  .grow-title { font-family:var(--display); font-weight:700; text-transform:uppercase; font-size:clamp(38px, 11vw, 60px); line-height:.95; color:var(--gold-hi); margin:10px 0 22px; }
+  /* MY SINATRA CARD: je eigen vijf keuzes onder je uitslag, als één kaart. */
+  .mycard { max-width:440px; margin:0 auto 34px; text-align:left; background:#12100d; overflow:hidden; box-shadow:0 18px 60px rgba(0,0,0,.6), 0 0 0 1px rgba(217,164,65,.4); }
+  .mc-photo { position:relative; height:clamp(150px, 42vw, 190px); }
+  .mc-photo img:first-child { width:100%; height:100%; object-fit:cover; object-position:58% 62%; display:block; filter:brightness(.78); }
+  .mc-photo::after { content:""; position:absolute; inset:0; background:linear-gradient(180deg, rgba(18,16,13,.35) 0%, rgba(18,16,13,0) 35%, #12100d 100%); }
+  .mc-body { padding:4px 22px 24px; }
+  /* De titel van dit scherm: duidelijk een kop, maar kleiner dan de score. */
+  .mc-head { font-family:var(--display); font-weight:700; text-transform:uppercase; font-size:clamp(28px, 8vw, 38px); line-height:1; letter-spacing:.06em; color:var(--ivory); margin:14px 0 10px; }
+  .mc-score { font-family:var(--display); font-weight:700; font-size:clamp(22px, 6.2vw, 28px); letter-spacing:.12em; color:var(--gold); margin:10px 0 6px; }
+  .mc-score span { font-family:var(--serif); font-weight:400; font-size:2.4em; letter-spacing:-.03em; color:var(--ivory); margin:0 6px; vertical-align:-.12em; }
+  .mc-title { font-family:var(--display); font-weight:700; text-transform:uppercase; font-size:clamp(34px, 9.6vw, 48px); line-height:.95; color:var(--gold-hi); margin:0 0 20px; text-wrap:balance; }
+  .mc-why { font-family:var(--display); font-weight:700; font-size:16px; letter-spacing:.26em; color:var(--ivory); margin:0 0 10px; padding-top:16px; border-top:1px solid var(--line); }
+  .mc-list { list-style:none; margin:0; padding:0; counter-reset:pick; }
+  .mc-list li { counter-increment:pick; position:relative; padding:11px 0 11px 40px; border-bottom:1px solid var(--line); }
+  .mc-list li:last-child { border-bottom:0; }
+  .mc-list li::before { content:"0" counter(pick); position:absolute; left:0; top:12px; font-family:var(--display); font-weight:700; font-size:15px; letter-spacing:.06em; color:var(--gold); }
+  .mc-q { display:block; font-size:13.5px; line-height:1.35; color:var(--ivory-2); }
+  .mc-a { display:block; font-size:18px; font-weight:700; line-height:1.3; color:var(--ivory); margin-top:2px; }
+
+  .prize { position:relative; isolation:isolate; overflow:hidden; padding:calc(var(--safe-t) + min(36vw, 220px)) var(--pad) 40px; }
+  .cta.next { margin-top:24px; font-size:17px; letter-spacing:.14em; }
+  .experience { padding:calc(var(--safe-t) + 24px) var(--pad) 40px; text-align:center; }
+  /* Elke stap vult minstens één scherm, zodat hij na de tik bovenaan staat en de vorige stap uit beeld is. */
+  .prize, .experience, .grow, .win { min-height:100vh; min-height:100svh; }
+  .experience-in { max-width:560px; margin:0 auto; }
+  .experience .live-poster { margin:0 auto; }
+  .how-much { font-family:var(--display); font-weight:700; text-transform:uppercase; font-size:clamp(28px, 8vw, 42px); line-height:1; color:var(--gold-hi); margin:24px 0 0; }
+  .how-much + .cta.next { margin-top:16px; }
+  .want { margin:44px 0 8px; text-align:center; }
+  .want-title { font-family:var(--display); font-weight:700; text-transform:uppercase; font-size:clamp(32px, 9vw, 48px); line-height:.98; color:var(--ivory); margin:0; text-wrap:balance; }
+  .beat { padding:44px var(--pad) 8px; text-align:center; }
+  .win .later { padding:calc(var(--safe-t) + 24px) var(--pad) 8px; border-top:0; }
+  .step { scroll-margin-top:0; }
+
+  .prize .photo { bottom:auto; height:min(110vw, 640px); }
+  .prize .photo img { object-position:50% 12%; filter:saturate(1.05) contrast(1.04) brightness(.9); }
+  .prize .photo::after { background:linear-gradient(180deg, rgba(10,9,8,.55) 0%, rgba(10,9,8,0) 22%, rgba(10,9,8,.15) 50%, rgba(10,9,8,.9) 78%, var(--black) 100%); }
+  .prize-title { font-family:var(--display); font-weight:700; text-transform:uppercase; font-size:clamp(40px, 12vw, 88px); line-height:.88; color:var(--ivory); margin:12px 0 10px; text-wrap:balance; }
+  .prize-title span { display:block; color:var(--gold-hi); font-size:.42em; letter-spacing:.14em; line-height:1.3; margin-top:12px; }
+  .prize-lede { font-family:var(--serif); font-style:italic; font-size:20px; color:var(--ivory); margin:14px 0 6px; }
+  .night { list-style:none; margin:0; padding:0; border-top:1px solid var(--line); }
+  .night li { padding:9px 0 9px 30px; border-bottom:1px solid var(--line); font-size:17px; font-weight:600; position:relative; }
+  .night li::before { content:""; position:absolute; left:4px; top:50%; width:10px; height:10px; margin-top:-5px; border:1px solid var(--gold); transform:rotate(45deg); }
+  .bonus { margin:12px 0 0; padding:12px 16px; background:rgba(217,164,65,.1); border-left:2px solid var(--gold); font-size:16px; line-height:1.4; }
+  .bonus b { display:block; font-family:var(--display); font-size:13px; letter-spacing:.3em; color:var(--gold); margin-bottom:4px; }
+
+  .later { padding:56px var(--pad) 24px; border-top:1px solid var(--line); }
+  .entry { margin:16px 0 0; padding:24px 20px 22px; border:1px dashed rgba(243,236,220,.35); text-align:left; }
+  .test-pill { display:inline-block; margin:0 0 12px; padding:5px 10px; font-family:var(--display); font-size:12px; font-weight:700; letter-spacing:.22em; color:var(--black); background:var(--ivory-2); }
+  .entry-title { font-family:var(--display); font-weight:700; font-size:30px; letter-spacing:.06em; margin:0 0 16px; }
+  .entry label { display:block; font-size:13px; letter-spacing:.08em; color:var(--ivory-3); margin:0 0 12px; }
+  .entry input { display:block; width:100%; margin-top:6px; padding:14px; font:inherit; font-size:16px; color:var(--ivory-3); background:rgba(243,236,220,.05); border:1px solid rgba(243,236,220,.15); border-radius:2px; }
+  .entry .cta[disabled] { background:rgba(243,236,220,.12); color:var(--ivory-2); cursor:not-allowed; margin-top:6px; }
+  .entry-note { font-size:14px; line-height:1.45; color:var(--ivory-2); margin:14px 0 0; }
+  .entry-note + .entry-note { margin-top:6px; color:var(--ivory-3); font-size:13px; }
+
+  .live { padding:56px var(--pad) calc(var(--safe-b) + 44px); text-align:center; border-top:1px solid var(--line); margin-top:32px; }
+  .live .eyebrow { margin-bottom:12px; }
+  .live .promo { font-size:16px; color:var(--ivory-2); margin:0 0 20px; }
+  .live .cta + .cta { margin-top:10px; }
+  .live-poster { display:block; width:100%; max-width:420px; margin:18px auto 22px; box-shadow:0 18px 60px rgba(0,0,0,.6); }
+
+  /* Op de telefoon en op lage schermen: dezelfde kaart, strakker gezet. */
+  @media (max-width:600px), (max-height:900px) {
+    .grow { padding-top:calc(var(--safe-t) + 6px); }
+    .mycard { margin-bottom:10px; }
+    .mc-photo { height:84px; }
+    .mc-body { padding:0 18px 14px; }
+    .mc-head { font-size:26px; margin:6px 0 6px; }
+    .mc-score { margin:4px 0 2px; font-size:20px; }
+    .mc-score span { font-size:2.2em; }
+    .mc-title { font-size:30px; margin:0 0 10px; }
+    .mc-why { font-size:14px; margin:0 0 2px; padding-top:10px; }
+    .mc-list li { padding:6px 0 6px 34px; }
+    .mc-list li::before { top:7px; font-size:14px; }
+    .mc-q { font-size:12.5px; line-height:1.3; }
+    .mc-a { font-size:16px; line-height:1.25; margin-top:1px; }
+    .want { margin:10px 0 8px; }
+    .want-title { font-size:26px; }
+    .want .cta.next { margin-top:12px; }
+  }
+  @media (max-width:899px) and (max-height:800px) {
+    .poster .photo { top:-7svh; }
+    .score { font-size:min(44vw, 20svh); }
+    .you-are { margin:8px 0 10px; }
+    .verdict { font-size:clamp(36px, 11vw, 60px); margin-bottom:10px; }
+    .because { font-size:15px; margin-bottom:16px; }
+  }
+  @media (min-width:900px) {
+    #start .photo { left:40%; height:auto; bottom:0; }
+    #start .photo img { object-position:50% 8%; }
+    #start .photo::after {
+      background:
+        linear-gradient(90deg, var(--black) 0%, rgba(10,9,8,0) 30%),
+        linear-gradient(180deg, transparent 70%, rgba(10,9,8,.7) 100%);
+    }
+    #quiz .photo { left:calc(50% - 320px); width:640px; height:62vh; height:62svh; }
+    .prize .photo { left:calc(50% - 300px); width:600px; }
+    .open-body { padding-bottom:9vh; }
+    .poster .photo::after {
+      background:linear-gradient(90deg, var(--black) 0%, rgba(10,9,8,0) 30%), linear-gradient(180deg, transparent 70%, rgba(10,9,8,.7) 100%);
+    }
+    .poster .photo { left:42%; height:auto; bottom:0; }
+    .poster .photo img { object-position:50% 8%; }
+    .poster-body { margin-left:0; padding-bottom:8vh; max-width:640px; }
+  }
+  @media (prefers-reduced-motion:reduce) { .rise, #choices .choice { animation:none; } }
+</style>
+</head>
+<body>
+<main>
+
+  <!-- OPENING -->
+  <section class="screen on" id="start" aria-labelledby="startTitle">
+    <div class="photo" aria-hidden="true"><img src="img/frank-mic.jpg" alt=""></div>
+    <div class="open-top"><img class="brand" src="img/fip-logo.png" alt="Frank In Person"></div>
+    <div class="open-body">
+      <h1 class="title" id="startTitle"><span>How</span><span>Sinatra</span><span class="gold">are you?</span></h1>
+      <p class="move">Not what you know.<br><b>How you move.</b></p>
+      <p class="how">Five choices. One Sinatra score.</p>
+      <button class="cta" id="begin" type="button">Take the test</button>
+    </div>
+  </section>
+
+  <!-- QUESTIONS -->
+  <section class="screen" id="quiz" aria-labelledby="qText">
+    <div class="photo" aria-hidden="true"><img src="img/frank-mic.jpg" alt=""></div>
+    <div class="quiz-in">
+      <div class="meter" id="meter" aria-hidden="true"></div>
+      <p class="last" id="lastQ" hidden>LAST QUESTION</p>
+      <p class="count" id="count">QUESTION 1 OF 5</p>
+      <h2 class="q-text" id="qText" tabindex="-1"></h2>
+      <div id="choices"></div>
+    </div>
+  </section>
+
+  <!-- RESULT: de Sinatra Experience, de uitslag, de prijs, je eigen kaart, meedoen, de uitdaging, en Frank live als slot.
+       Elke volgende stap is een knop. -->
+  <section class="screen" id="result" aria-labelledby="verdict">
+    <div class="step experience" id="experience">
+      <div class="experience-in">
+        <img class="live-poster" src="img/frank-live.jpg" alt="Frank In Person — The one and only Sinatra Experience">
+        <p class="how-much">How much Sinatra am I?</p>
+        <button class="cta next" id="showResult" type="button">Show my result</button>
+      </div>
+    </div>
+    <div class="step poster" id="poster" hidden>
+      <div class="photo" aria-hidden="true"><img src="img/frank-mic.jpg" alt=""></div>
+      <div class="poster-top"><p class="eyebrow">Your result</p></div>
+      <div class="poster-body">
+        <p class="congrats">Congratulations.</p>
+        <p class="score" id="score">0%</p>
+        <p class="you-are" id="youAre"></p>
+        <p class="verdict" id="verdict"></p>
+        <p class="because" id="because"></p>
+        <button class="cta next" id="seePrize" type="button">What can I win?</button>
+      </div>
+    </div>
+    <div class="step prize" id="prize" hidden>
+      <div class="photo" aria-hidden="true"><img src="img/frank-mic.jpg" alt=""></div>
+      <div class="prize-in">
+        <p class="eyebrow">The prize</p>
+        <h3 class="prize-title">Win the ultimate Sinatra night<span>with Frank In Person</span></h3>
+        <p class="prize-lede">One night. The whole experience.</p>
+        <ul class="night">
+          <li>2 VIP tickets for Frank In Person</li>
+          <li>Meet Frank backstage</li>
+          <li>Your crooner-style photo moment</li>
+          <li>A drink before the show</li>
+        </ul>
+        <p class="bonus"><b>BONUS</b>Your personalised “How Sinatra Are You?” Crooner Portrait</p>
+        <button class="cta next" id="seeCard" type="button">See my Sinatra card</button>
+      </div>
+    </div>
+    <div class="step grow" id="cardBlock" hidden>
+      <div class="grow-in">
+        <article class="mycard" id="myCard" aria-labelledby="mcTitle">
+          <div class="mc-photo" aria-hidden="true"><img src="img/frank-mic.jpg" alt=""></div>
+          <div class="mc-body">
+            <h3 class="mc-head">My Sinatra card</h3>
+            <p class="mc-score">I’M <span id="mcPercent">0%</span> SINATRA</p>
+            <p class="mc-title" id="mcTitle"></p>
+            <p class="mc-why">THIS IS WHY</p>
+            <ol class="mc-list" id="mcList"></ol>
+          </div>
+        </article>
+        <div class="want">
+          <h3 class="want-title">Want to win the ultimate Sinatra night?</h3>
+          <button class="cta next" id="enterToWin" type="button">Enter to win</button>
+        </div>
+      </div>
+    </div>
+    <div class="step win" id="winStep" hidden>
+      <div class="later" id="later">
+        <div class="later-in">
+          <div class="entry" id="entry" aria-labelledby="entryTitle">
+            <p class="test-pill">TEST PREVIEW</p>
+            <p class="entry-title" id="entryTitle">ENTER TO WIN</p>
+            <label>Your name<input type="text" disabled placeholder="Entries not open yet" autocomplete="off"></label>
+            <label>Your email<input type="email" disabled placeholder="Entries not open yet" autocomplete="off"></label>
+            <button class="cta" type="button" disabled>Entries not open yet</button>
+            <p class="entry-note">Test preview — entries are not open yet. Nothing you enter is sent or saved.</p>
+            <p class="entry-note">Closing date, terms and how the winner is chosen: not set yet.</p>
+          </div>
+        </div>
+      </div>
+      <div class="beat" id="beat">
+        <div class="grow-in">
+          <h3 class="grow-title">Can you beat me?</h3>
+          <div class="share">
+            <button class="cta" id="challenge" type="button">Challenge a friend</button>
+            <button class="cta" id="again" type="button">PLAY AGAIN</button>
+            <p class="wink">I did it my way.</p>
+            <p class="said" id="said" role="status" aria-live="polite"></p>
+          </div>
+        </div>
+      </div>
+      <div class="live" id="live">
+        <div class="live-in">
+          <p class="eyebrow">Frank In Person live</p>
+          <p class="promo" id="promo"></p>
+          <a class="cta" id="liveLink" href="https://frankinperson.com/agenda/" target="_blank" rel="noopener">See the live dates</a>
+          <a class="cta ghost" id="promoLink" href="https://www.frankinperson.com/music/" target="_blank" rel="noopener">Hear the voice</a>
+          <p class="credit">Photography courtesy of Frank In Person · frankinperson.com</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+<script>
+(function(){
+  'use strict';
+  // Vijf gedwongen keuzes. Elke keuze telt punten; vijf keer maximaal 20 maakt 100 procent.
+  var QUESTIONS = [
+    { q: 'It is 1 a.m. The bar is closing. You…',
+      a: [['Order one more and tell the story again', 20], ['Head home, you have somewhere to be at eight', 5],
+          ['Move the whole party to someone else’s place', 14], ['Slip out without saying goodbye', 9]] },
+    { q: 'Someone plays your song. You…',
+      a: [['Take the room. Everyone is listening now', 20], ['Sing along, badly, on purpose', 12],
+          ['Nod once. They know', 16], ['Turn it down, you are talking', 4]] },
+    { q: 'Your one non-negotiable is…',
+      a: [['The suit', 18], ['The voice', 20], ['The crew', 14], ['The exit', 8]] },
+    { q: 'You get it wrong in public. You…',
+      a: [['Own it, loudly, and move on', 20], ['Fix it quietly before anyone notices', 10],
+          ['Laugh first, so nobody else can', 15], ['Never mention it again', 6]] },
+    { q: 'Your idea of a great night is…',
+      a: [['One room, the right people, until it ends', 20], ['Somewhere new, no plan', 15],
+          ['Front row, someone else on stage', 11], ['Home before midnight', 5]] }
+  ];
+  var VERDICTS = [
+    [90, 'CHAIRMAN OF THE RAT PACK.', 'You do not enter a room, you arrive in it. Sinatra would have picked up your tab.'],
+    [75, 'RAT PACK MATERIAL.', 'You have the swagger and the timing. Just do not let the crew go home early.'],
+    [55, 'A GENTLEMAN, MOSTLY.', 'You have the instincts. You just keep an eye on the clock while you use them.'],
+    [35, 'MORE COOL THAN CROONER.', 'You like the style, but you are not staying out for it. That is allowed.'],
+    [0,  'YOU DO IT YOUR WAY.', 'Barely Sinatra, completely yourself. He would respect that more than the copy.']
+  ];
+  var PROMO = 'The songbook, the swagger and a big-band night — live on stage.';
+  var index = 0, total = 0, hold = null, chosen = [];
+  function byId(id){ return document.getElementById(id); }
+  function show(name){
+    ['start','quiz','result'].forEach(function(id){ byId(id).classList.toggle('on', id === name); });
+    window.scrollTo(0, 0);
+  }
+  function drawMeter(){
+    var meter = byId('meter');
+    meter.textContent = '';
+    QUESTIONS.forEach(function(_, i){
+      var bar = document.createElement('i');
+      if (i < index) bar.className = 'done'; else if (i === index) bar.className = 'now';
+      meter.appendChild(bar);
+    });
+  }
+  function ask(){
+    var item = QUESTIONS[index];
+    drawMeter();
+    // De laatste vraag heet zo: LAST QUESTION boven 5 OF 5.
+    var last = index === QUESTIONS.length - 1;
+    byId('lastQ').hidden = !last;
+    byId('count').textContent = last ? (index + 1) + ' OF ' + QUESTIONS.length : 'QUESTION ' + (index + 1) + ' OF ' + QUESTIONS.length;
+    var qText = byId('qText');
+    qText.textContent = item.q;
+    // De vraag komt bij elke stap opnieuw het beeld in.
+    qText.classList.remove('rise'); void qText.offsetWidth; qText.classList.add('rise');
+    var box = byId('choices');
+    box.textContent = '';
+    box.classList.remove('locked');
+    item.a.forEach(function(pair){
+      var button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'choice';
+      button.textContent = pair[0];
+      button.addEventListener('click', function(){ pick(button, pair[1]); });
+      box.appendChild(button);
+    });
+    qText.focus && qText.focus({ preventScroll: true });
+  }
+  // Tik, zie je keuze, dan pas de volgende vraag. Tijdens die korte pauze telt geen tweede tik.
+  function pick(button, points){
+    var box = byId('choices');
+    if (box.classList.contains('locked')) return;
+    box.classList.add('locked');
+    button.classList.add('picked');
+    // Wat de bezoeker koos, precies zoals het op de knop stond: dat komt later op MY SINATRA CARD.
+    chosen[index] = [QUESTIONS[index].q, button.textContent];
+    hold = setTimeout(function(){ hold = null; answer(points); }, 320);
+  }
+  function answer(points){
+    total += points;
+    index++;
+    if (index < QUESTIONS.length) { ask(); return; }
+    finish();
+  }
+  function finish(){
+    var percent = Math.round(total / (QUESTIONS.length * 20) * 100);
+    var verdict = VERDICTS.find(function(row){ return percent >= row[0]; });
+    byId('score').textContent = percent + '%';
+    // Drie cijfers (100%) krijgen een iets kleinere maat, zodat het getal op een telefoon helemaal in beeld blijft.
+    byId('score').classList.toggle('wide', String(percent).length > 2);
+    byId('verdict').textContent = verdict[1];
+    byId('because').textContent = verdict[2];
+    byId('youAre').textContent = 'YOU ARE ' + percent + '% SINATRA.';
+    byId('promo').textContent = PROMO;
+    byId('said').textContent = '';
+    byId('challenge').setAttribute('data-percent', String(percent));
+    fillMyCard(percent, verdict[1]);
+    makeCard(percent, verdict[1], chosen.slice());
+    STEPS.forEach(function(id){ byId(id).hidden = true; });
+    show('result');
+  }
+  // Na de quiz gaat elke belangrijke stap met een knop: de volgende stap komt pas tevoorschijn als je erop tikt.
+  var STEPS = ['poster', 'prize', 'cardBlock', 'winStep'];
+  function reveal(id){
+    var el = byId(id);
+    el.hidden = false;
+    var still = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    el.scrollIntoView({ behavior: still ? 'auto' : 'smooth', block: 'start' });
+  }
+  // MY SINATRA CARD: de uitslag met de vijf keuzes die deze bezoeker echt tikte.
+  function fillMyCard(percent, verdictText){
+    byId('mcPercent').textContent = percent + '%';
+    byId('mcTitle').textContent = verdictText;
+    var list = byId('mcList');
+    list.textContent = '';
+    chosen.forEach(function(pair){
+      var li = document.createElement('li'), q = document.createElement('span'), a = document.createElement('span');
+      q.className = 'mc-q'; q.textContent = pair[0];
+      a.className = 'mc-a'; a.textContent = pair[1];
+      li.appendChild(q); li.appendChild(a); list.appendChild(li);
+    });
+  }
+  // De regel die een vriend krijgt: één plek, gebruikt door de uitdaging en door de kaart.
+  function shareLine(){
+    var percent = byId('challenge').getAttribute('data-percent');
+    return 'I’M ' + percent + '% SINATRA. CAN YOU BEAT ME?';
+  }
+
+  // ---------- De Sinatra-kaart: een beeld van de uitslag, gemaakt op het toestel zelf ----------
+  // Er wordt niets verstuurd: het beeld ontstaat in de browser en gaat alleen weg als de bezoeker zelf deelt.
+  var cardFile = null, cardRun = 0;
+  function loadImage(src){
+    return new Promise(function(resolve, reject){ var im = new Image(); im.onload = function(){ resolve(im); }; im.onerror = reject; im.src = src; });
+  }
+  function spaced(ctx, text, x, y, spacing, align){
+    var chars = text.split(''), width = 0;
+    chars.forEach(function(c){ width += ctx.measureText(c).width + spacing; });
+    width -= spacing;
+    var cx = align === 'center' ? x - width / 2 : x;
+    chars.forEach(function(c){ ctx.fillText(c, cx, y); cx += ctx.measureText(c).width + spacing; });
+  }
+  function wrap(ctx, text, maxWidth){
+    var words = text.split(' '), lines = [], line = '';
+    words.forEach(function(w){ var t = line ? line + ' ' + w : w; if (ctx.measureText(t).width > maxWidth && line) { lines.push(line); line = w; } else { line = t; } });
+    lines.push(line);
+    return lines;
+  }
+  // Hetzelfde als MY SINATRA CARD, als beeld om te delen: uitslag, titel en de vijf echte keuzes.
+  function makeCard(percent, verdictText, picks){
+    var run = ++cardRun;
+    cardFile = null;
+    var W = 1080, H = 1350, M = 72, BAND = 430;
+    var serif = '"Bodoni 72", Didot, "Bodoni MT", "Playfair Display", "Times New Roman", serif';
+    var display = '"Avenir Next Condensed", Futura, "Helvetica Neue", "Arial Narrow", sans-serif';
+    var body = '-apple-system, "Helvetica Neue", Arial, sans-serif';
+    Promise.all([loadImage('img/frank-mic.jpg'), document.fonts ? document.fonts.ready : null]).then(function(res){
+      if (run !== cardRun) return;
+      var photo = res[0];
+      var canvas = document.createElement('canvas'); canvas.width = W; canvas.height = H;
+      var ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#0a0908'; ctx.fillRect(0, 0, W, H);
+      // bovenaan de band met hand en microfoon
+      var sh = photo.width * BAND / W, sy = Math.max(0, Math.min(photo.height - sh, photo.height * 0.5 - sh / 2));
+      ctx.drawImage(photo, 0, sy, photo.width, sh, 0, 0, W, BAND);
+      var g = ctx.createLinearGradient(0, 0, 0, BAND);
+      g.addColorStop(0, 'rgba(10,9,8,.5)'); g.addColorStop(.35, 'rgba(10,9,8,.05)'); g.addColorStop(1, '#0a0908');
+      ctx.fillStyle = g; ctx.fillRect(0, 0, W, BAND);
+      ctx.fillStyle = '#d9a441'; ctx.font = '700 30px ' + display;
+      spaced(ctx, 'MY SINATRA CARD', M, 76, 8, 'left');
+      ctx.textBaseline = 'alphabetic';
+      // uitslag en titel
+      var y = BAND + 110;
+      ctx.fillStyle = '#d9a441'; ctx.font = '700 54px ' + display;
+      spaced(ctx, 'I’M', M, y, 8, 'left');
+      var x = M + ctx.measureText('I’M').width + 3 * 8 + 22;
+      ctx.fillStyle = '#f3ecdc'; ctx.font = '400 150px ' + serif;
+      ctx.fillText(percent + '%', x, y);
+      x += ctx.measureText(percent + '%').width + 24;
+      ctx.fillStyle = '#d9a441'; ctx.font = '700 54px ' + display;
+      spaced(ctx, 'SINATRA', x, y, 10, 'left');
+      ctx.fillStyle = '#f0c46a'; ctx.font = '700 70px ' + display;
+      wrap(ctx, verdictText.toUpperCase(), W - 2 * M).forEach(function(l){ y += 76; ctx.fillText(l, M, y); });
+      y += 34;
+      ctx.fillStyle = 'rgba(243,236,220,.18)'; ctx.fillRect(M, y, W - 2 * M, 2);
+      y += 46;
+      ctx.fillStyle = '#f3ecdc'; ctx.font = '700 28px ' + display;
+      spaced(ctx, 'THIS IS WHY', M, y, 7, 'left');
+      // de vijf keuzes: past het niet, dan wordt de letter kleiner
+      var top = y + 18, TX = M + 64, TW = W - TX - M, size = 34, rows;
+      function layout(sz){
+        ctx.font = '700 ' + sz + 'px ' + body;
+        var h = 0, out = picks.map(function(p){ var lines = wrap(ctx, p[1], TW); var r = { q: p[0], lines: lines, h: 30 + lines.length * (sz + 8) + 18 }; h += r.h; return r; });
+        return { rows: out, h: h };
+      }
+      do { rows = layout(size); size -= 2; } while (top + rows.h > H - 92 && size >= 24);
+      size += 2;
+      var cy = top;
+      rows.rows.forEach(function(r, i){
+        cy += 30;
+        ctx.fillStyle = '#d9a441'; ctx.font = '700 28px ' + display; ctx.fillText('0' + (i + 1), M, cy + (size + 8));
+        ctx.fillStyle = '#8d8574'; ctx.font = '400 23px ' + body; ctx.fillText(r.q, TX, cy);
+        ctx.fillStyle = '#f3ecdc'; ctx.font = '700 ' + size + 'px ' + body;
+        r.lines.forEach(function(l){ cy += size + 8; ctx.fillText(l, TX, cy); });
+        cy += 18;
+      });
+      ctx.fillStyle = 'rgba(243,236,220,.72)'; ctx.font = '700 28px ' + display;
+      spaced(ctx, 'HOW SINATRA ARE YOU?  ·  CAN YOU BEAT ME?', W / 2, H - 40, 6, 'center');
+      canvas.toBlob(function(blob){
+        if (run !== cardRun || !blob) return;
+        cardFile = new File([blob], 'my-sinatra-card-' + percent + '.png', { type: 'image/png' });
+      }, 'image/png');
+    }).catch(function(){ /* zonder beeld blijft de uitdaging met tekst gewoon werken */ });
+  }
+  // De uitkomst van de uitdaging staat kort op de knop zelf, waar de vinger net was; de deelregel zelf komt nooit in beeld.
+  var labelTimer = null;
+  function flash(label, note){
+    var button = byId('challenge');
+    if (!button.getAttribute('data-label')) button.setAttribute('data-label', button.textContent);
+    button.textContent = label;
+    byId('said').textContent = note || '';
+    clearTimeout(labelTimer);
+    labelTimer = setTimeout(function(){ button.textContent = button.getAttribute('data-label'); }, 2200);
+  }
+  function challenge(){
+    var line = shareLine();
+    // Kopiëren zonder klembord-API, ook op een iPhone over http: tijdelijk tekstvak, selecteren, kopiëren.
+    // Alleen als de browser meldt dat het gelukt is, staat er CHALLENGE COPIED.
+    var quietCopy = function(){
+      var box = document.createElement('textarea');
+      box.value = line;
+      box.setAttribute('readonly', '');
+      box.setAttribute('aria-hidden', 'true');
+      box.style.cssText = 'position:absolute;left:-9999px;top:' + (window.pageYOffset || 0) + 'px;font-size:12pt;border:0;padding:0;margin:0;';
+      document.body.appendChild(box);
+      box.select();
+      box.setSelectionRange(0, box.value.length);
+      var copied = false;
+      try { copied = document.execCommand('copy'); } catch (e) { copied = false; }
+      document.body.removeChild(box);
+      if (window.getSelection) window.getSelection().removeAllRanges();
+      if (copied) flash('Challenge copied', 'Challenge copied.');
+      else flash('Copy didn’t work', 'Take a screenshot of your card and send it.');
+    };
+    var copy = function(){
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        return navigator.clipboard.writeText(line).then(function(){ flash('Challenge copied', 'Challenge copied.'); }, quietCopy);
+      }
+      quietCopy();
+    };
+    // Kan het toestel een beeld delen, dan gaat de Sinatra-kaart mee met de regel.
+    if (cardFile && navigator.share && navigator.canShare && navigator.canShare({ files: [cardFile] })) {
+      navigator.share({ files: [cardFile], title: 'How Sinatra Are You?', text: line }).then(function(){ flash('Challenge sent', 'Challenge sent.'); }, copy);
+      return;
+    }
+    if (navigator.share) {
+      navigator.share({ title: 'How Sinatra Are You?', text: line }).then(function(){ flash('Challenge sent', 'Challenge sent.'); }, copy);
+      return;
+    }
+    copy();
+  }
+  function restart(){ if (hold) { clearTimeout(hold); hold = null; } index = 0; total = 0; chosen = []; ask(); show('quiz'); }
+  function playAgain(){ if (hold) { clearTimeout(hold); hold = null; } index = 0; total = 0; chosen = []; byId('said').textContent = ''; ask(); show('start'); }
+  // Een gouden knop toont eerst ~300 ms dat hij is ingedrukt, dan pas de volgende stap. Een tweede tik telt niet.
+  function press(id, next){
+    byId(id).addEventListener('click', function(){
+      var button = this;
+      if (button.classList.contains('pressed')) return;
+      button.classList.add('pressed');
+      setTimeout(function(){ button.classList.remove('pressed'); next(); }, 300);
+    });
+  }
+  press('begin', restart);
+  press('again', playAgain);
+  press('showResult', function(){ reveal('poster'); });
+  press('seePrize', function(){ reveal('prize'); });
+  press('seeCard', function(){ reveal('cardBlock'); });
+  press('enterToWin', function(){ reveal('winStep'); });
+  // Delen moet direct bij de tik starten (anders weigert de telefoon het deelvenster); de druk is alleen zichtbaar.
+  byId('challenge').addEventListener('click', function(){
+    var button = this;
+    button.classList.add('pressed');
+    setTimeout(function(){ button.classList.remove('pressed'); }, 300);
+    challenge();
+  });
+})();
+</script>
+</body>
+</html>
