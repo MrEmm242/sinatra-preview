@@ -17,6 +17,7 @@
     --display:"Avenir Next Condensed", "Futura", "Helvetica Neue", "Arial Narrow", "Roboto Condensed", sans-serif-condensed, sans-serif;
     --serif:"Bodoni 72", "Didot", "Bodoni MT", "Playfair Display", "Times New Roman", serif;
     --pad:clamp(20px, 6vw, 44px);
+    --cta-h:62px; /* één vaste hoogte voor alle gele hoofdknoppen */
     --safe-t:env(safe-area-inset-top, 0px); --safe-b:env(safe-area-inset-bottom, 0px);
   }
   * { box-sizing:border-box; }
@@ -44,6 +45,8 @@
     font-family:var(--display); font-size:19px; font-weight:700; letter-spacing:.2em; text-transform:uppercase;
     padding:16px 22px; transition:background .2s ease, transform .1s ease;
   }
+  /* De gele hoofdknoppen zijn overal precies even hoog; de tekst staat in het midden. Transparant en uitgeschakeld vallen erbuiten. */
+  .cta:not(.ghost):not([disabled]) { height:var(--cta-h); min-height:var(--cta-h); padding-top:0; padding-bottom:0; }
   .cta:hover, .cta:focus-visible { background:var(--gold-hi); }
   .cta:active { transform:scale(.985); }
   /* Na een tik blijft de gouden knop even zichtbaar ingedrukt voordat de volgende stap komt. */
